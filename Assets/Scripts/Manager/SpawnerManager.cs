@@ -1,64 +1,57 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-using UnityEngine.Pool;
 
 public class SpawnerManager : MonoBehaviour
 {
-    public static SpawnerManager Instance;
 
-    public List<GameObject> pooledObjects;
-    public GameObject objToPool;
-    public int poolAmount;
+    private static SpawnerManager _instance;
+
+    public GameObject[] spawnersObj;
+    private List<Spawner> spawners;
 
     public float spawnTimer;
     private float _maxSpawnTimer;
-    
-    // Start is called before the first frame update
-    void Start()
+
+
+    public static SpawnerManager Instance { get { return _instance; } }
+
+
+    private void Awake()
     {
-        pooledObjects = new List<GameObject>();
-        for (int i = 0; i < poolAmount; i++)
+        if (_instance != null && _instance != this)
         {
-            GameObject obj = Instantiate(objToPool, transform);
-            obj.SetActive(false);
-            pooledObjects.Add(obj);
+            Destroy(gameObject);
         }
-
-
-        _maxSpawnTimer = spawnTimer;
+        else
+        {
+            _instance = this;
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+
+    private void Start()
+    {
+        _maxSpawnTimer = spawnTimer;
+        spawners = new List<Spawner>(spawnersObj.ToList().Select(elem => elem.GetComponent<Spawner>()));
+    }
+    private void Update()
     {
         SpawnerHandler();
     }
 
-
     private void SpawnerHandler()
     {
+        int randomSpawner = UnityEngine.Random.Range(0, spawners.Count);
         if (spawnTimer <= 0)
         {
-            SpawnNewEnemy();
+            spawners[randomSpawner].SpawnNewEnemy();
             spawnTimer = _maxSpawnTimer;
         }
         else
             spawnTimer -= Time.deltaTime;
-    }
-
-
-    private void SpawnNewEnemy()
-    {
-        for (int i = 0; i < pooledObjects.Count; i++)
-        {
-            if (!pooledObjects[i].activeInHierarchy)
-            {
-                pooledObjects[i].SetActive(true);
-                pooledObjects[i].GetComponent<Collider2D>().enabled = true;
-                return;
-            }
-        }
     }
 
 }

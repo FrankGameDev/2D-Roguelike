@@ -33,7 +33,6 @@ public class PlayerController : MonoBehaviour, IDamageable, IHealthable
 
     // -- Attack
     private bool _isAttacking;
-    private Vector2 _attackDirection;
     private bool _canAttack = true;
 
     // -- Dodge
@@ -87,7 +86,6 @@ public class PlayerController : MonoBehaviour, IDamageable, IHealthable
         Vector2 tmp = context.ReadValue<Vector2>();
         _direction = new Vector2(tmp.x, tmp.y);
         _isMovementPressed = _direction != Vector2.zero;
-        _attackDirection = (_isMovementPressed && _canAttack) ? _direction : _attackDirection;
         _facingDirection = (_isMovementPressed)
             ? (_direction.x >= 0) ? 1 : -1
             : _facingDirection;
@@ -140,7 +138,7 @@ public class PlayerController : MonoBehaviour, IDamageable, IHealthable
 
     }
 
-    private Collider2D[] OnHit => Physics2D.OverlapCircleAll((Vector2)transform.position + _attackDirection,
+    private Collider2D[] OnHit => Physics2D.OverlapCircleAll((Vector2)transform.position + _direction,
         playerParams.attackRadius, playerParams.enemyMask);
 
     IEnumerator ResetAttack(float attackCD)
@@ -185,7 +183,7 @@ public class PlayerController : MonoBehaviour, IDamageable, IHealthable
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere((Vector2)transform.position + _attackDirection, playerParams.attackRadius);
+        Gizmos.DrawWireSphere((Vector2)transform.position + _direction, playerParams.attackRadius);
     }
 
     private void TakeDamage(float dmgAmount)

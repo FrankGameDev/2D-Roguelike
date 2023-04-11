@@ -52,7 +52,6 @@ public class EnemyController : MonoBehaviour, IDamageable, IHealthable
 
     // -- UTILITY
     private bool _isDisabled;
-    private bool _isDead;
 
     private void Awake()
     {
@@ -82,7 +81,7 @@ public class EnemyController : MonoBehaviour, IDamageable, IHealthable
     // Update is called once per frame
     void Update()
     {
-        if (_isDisabled || _isDead)
+        if (_isDisabled)
             return;
 
         Attack();
@@ -90,7 +89,7 @@ public class EnemyController : MonoBehaviour, IDamageable, IHealthable
 
     private void FixedUpdate()
     {
-        if (_isDisabled || _isDead)
+        if (_isDisabled)
             return;
 
         MoveTowardsPlayer();
@@ -164,13 +163,13 @@ public class EnemyController : MonoBehaviour, IDamageable, IHealthable
 
     private void TakeDamage(float dmgAmount)
     {
-        StartCoroutine(DisableForSeconds(1f));
         ApplyKnockback();
         health -= dmgAmount;
         if (health <= 0)
         {
             Die();
         }
+        StartCoroutine(DisableForSeconds(1f));
         animator.SetTrigger(_takeDamageHash);
     }
 
@@ -178,7 +177,6 @@ public class EnemyController : MonoBehaviour, IDamageable, IHealthable
     {
         Debug.Log("Muori");
         animator.SetBool(_isDeadHash, true);
-        _isDead = true;
         EnemyInactive();
     }
 
@@ -209,6 +207,5 @@ public class EnemyController : MonoBehaviour, IDamageable, IHealthable
     private void EnemyInactive()
     {
         gameObject.SetActive(false);
-        GetComponent<Collider2D>().enabled = false;
     }
 }
