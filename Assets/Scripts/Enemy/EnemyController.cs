@@ -84,7 +84,7 @@ public class EnemyController : MonoBehaviour, IDamageable, IHealthable
         if (_isDisabled)
             return;
 
-        Attack();
+        StartAttack();
     }
 
     private void FixedUpdate()
@@ -125,16 +125,21 @@ public class EnemyController : MonoBehaviour, IDamageable, IHealthable
 
     #endregion
 
-    private void Attack()
+    private void StartAttack()
     {
         if (!_canAttack || _distanceFromPlayer.magnitude > enemyParameters.attackRadius)
             return;
 
-        Collider2D playerColl = OnHit();
-        if(playerColl != null)
-            CombatManager.instance.ApplyDmgOutput(playerColl, enemyParameters.attackDmg);
         AttackAnimationHandler();
         StartCoroutine(ResetAttack(enemyParameters.attackCooldown));
+       
+    }
+
+    private void AttackHit()
+    {
+        Collider2D playerColl = OnHit();
+        if (playerColl != null)
+            CombatManager.instance.ApplyDmgOutput(playerColl, enemyParameters.attackDmg);
     }
 
     private Collider2D OnHit()
@@ -175,7 +180,6 @@ public class EnemyController : MonoBehaviour, IDamageable, IHealthable
 
     private void Die()
     {
-        Debug.Log("Muori");
         animator.SetBool(_isDeadHash, true);
         EnemyInactive();
     }

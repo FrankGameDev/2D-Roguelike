@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48a2cae2c815a374cabf6d7e858976c5, type: 3}
   m_Name: PlayerParams
   m_EditorClassIdentifier: 
-  hp: 97
+  hp: 100
   speed: 5
   dashCooldown: 1
   attackRadius: 1

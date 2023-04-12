@@ -7,7 +7,7 @@ public class PlayerParameters : GenericStats
 {
     [Header("Movement fields")]
     public float speed;
-    public float dashCooldown;
+    public float dodgeCooldown;
 
     [Header("Attack fields")]
     [Header("------------------")]

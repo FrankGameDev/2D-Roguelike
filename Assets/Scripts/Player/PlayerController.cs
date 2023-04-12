@@ -20,6 +20,8 @@ public class PlayerController : MonoBehaviour, IDamageable, IHealthable
 
     private SpriteRenderer rbSprite;
 
+    private Collider2D collider;
+
     private PlayerAction _input;
 
     public float health { get => _hp; set => _hp = value; }
@@ -37,6 +39,7 @@ public class PlayerController : MonoBehaviour, IDamageable, IHealthable
 
     // -- Dodge
     private bool _isDodging;
+    private bool _canDodge = true;
 
 
     // -- ANIMATOR
@@ -65,30 +68,40 @@ public class PlayerController : MonoBehaviour, IDamageable, IHealthable
 
         rbSprite = GetComponent<SpriteRenderer>();
 
+        collider = GetComponent<Collider2D>();
+
         // --- INPUT SETUP
         _input = new PlayerAction();
         _input.PlayerController.Movement.started += onMovementInput;
         _input.PlayerController.Movement.performed += onMovementInput;
         _input.PlayerController.Movement.canceled += onMovementInput;
 
-        _input.PlayerController.Attack.started += cxt => _isAttacking = cxt.ReadValueAsButton();
-        _input.PlayerController.Attack.performed += cxt => _isAttacking = cxt.ReadValueAsButton();
-        _input.PlayerController.Attack.canceled += cxt => _isAttacking = cxt.ReadValueAsButton();
+        _input.PlayerController.Attack.started += onAttackInput;
+        _input.PlayerController.Attack.performed += onAttackInput;
+        _input.PlayerController.Attack.canceled += onAttackInput;
 
-        _input.PlayerController.Dodge.performed += cxt => _isDodging = cxt.ReadValueAsButton();
-
+        _input.PlayerController.Dodge.performed += onDodgeInput;
     }
 
 
     void onMovementInput(InputAction.CallbackContext context)
     {
-
         Vector2 tmp = context.ReadValue<Vector2>();
         _direction = new Vector2(tmp.x, tmp.y);
         _isMovementPressed = _direction != Vector2.zero;
         _facingDirection = (_isMovementPressed)
             ? (_direction.x >= 0) ? 1 : -1
             : _facingDirection;
+    }
+
+    void onAttackInput(InputAction.CallbackContext context)
+    {
+        _isAttacking = context.ReadValueAsButton();
+    }
+
+    void onDodgeInput(InputAction.CallbackContext context)
+    {
+        _isDodging = context.ReadValueAsButton();
     }
 
     void Start()
@@ -105,7 +118,8 @@ public class PlayerController : MonoBehaviour, IDamageable, IHealthable
 
     private void Update()
     {
-        Attack();
+        StartAttack();
+        Dodge();
     }
 
     private void FixedUpdate()
@@ -122,20 +136,22 @@ public class PlayerController : MonoBehaviour, IDamageable, IHealthable
     }
 
     #region Attack
-    private void Attack()
+    private void StartAttack()
     {
         if (!_canAttack || !_isAttacking)
             return;
 
+        AttackAnimationHandler();
+        StartCoroutine(ResetAttack(playerParams.attackCooldown));
+    }
+
+    private void AttackHit()
+    {
         Array.ForEach(OnHit, collider =>
         {
             Debug.Log(collider);
             CombatManager.instance.ApplyDmgOutput(collider, playerParams.attackDmg);
         });
-        AttackAnimationHandler();
-        StartCoroutine(ResetAttack(playerParams.attackCooldown));
-
-
     }
 
     private Collider2D[] OnHit => Physics2D.OverlapCircleAll((Vector2)transform.position + _direction,
@@ -163,7 +179,32 @@ public class PlayerController : MonoBehaviour, IDamageable, IHealthable
 
     private void Dodge()
     {
+        if (!_isDodging)
+            return;
 
+        animator.SetTrigger(_isDodgingHash);
+        StartCoroutine(DodgeReset());
+    }
+
+    IEnumerator DodgeReset()
+    {
+        _canDodge = false;
+        _isDodging = true;
+        yield return new WaitForSeconds(playerParams.dodgeCooldown);
+        _canDodge = true;
+        _isDodging = false;
+
+    }
+
+    void DodgeActive()
+    {
+        collider.enabled = false;
+    }
+
+
+    void DodgeInactive()
+    {
+        collider.enabled = true;
     }
 
     #region Input system utils
@@ -193,8 +234,6 @@ public class PlayerController : MonoBehaviour, IDamageable, IHealthable
         {
             Debug.Log("Muori");
             animator.SetBool(_isDeadHash, true);
-            //onDie += addEvent
-            //onDie?.Invoke(2);
             return;
         }
         animator.SetTrigger(_takeDamageHash);
@@ -203,6 +242,7 @@ public class PlayerController : MonoBehaviour, IDamageable, IHealthable
     public void ApplyDamage(float dmgAmount)
     {
         onDamage += TakeDamage;
+        onDamage += UiManager.ChangeHpValue;
         onDamage?.Invoke(dmgAmount);
     }
 }
