@@ -107,8 +107,6 @@ public class EnemyController : MonoBehaviour, IDamageable, IHealthable
 
     private void MoveTowardsPlayer()
     {
-        //TODO aggiungere rallentamento o stop nemico ad una certa distanza
-
         GetDirection();
 
         float speed = enemyParameters.speed;
@@ -125,6 +123,7 @@ public class EnemyController : MonoBehaviour, IDamageable, IHealthable
 
     #endregion
 
+    #region Attack
     private void StartAttack()
     {
         if (!_canAttack || _distanceFromPlayer.magnitude > enemyParameters.attackRadius)
@@ -165,6 +164,10 @@ public class EnemyController : MonoBehaviour, IDamageable, IHealthable
         animator.SetInteger(_attackTypeHash, _randomAttack);
     }
 
+
+    #endregion
+
+    #region Take Damage and Die function
 
     private void TakeDamage(float dmgAmount)
     {
@@ -211,5 +214,8 @@ public class EnemyController : MonoBehaviour, IDamageable, IHealthable
     private void EnemyInactive()
     {
         gameObject.SetActive(false);
+        GetComponent<Collider2D>().enabled = false;
     }
+
+    #endregion
 }

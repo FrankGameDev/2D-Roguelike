@@ -177,6 +177,9 @@ public class PlayerController : MonoBehaviour, IDamageable, IHealthable
 
     #endregion
 
+    #region Dodge
+
+
     private void Dodge()
     {
         if (!_isDodging)
@@ -196,6 +199,7 @@ public class PlayerController : MonoBehaviour, IDamageable, IHealthable
 
     }
 
+
     void DodgeActive()
     {
         collider.enabled = false;
@@ -206,6 +210,8 @@ public class PlayerController : MonoBehaviour, IDamageable, IHealthable
     {
         collider.enabled = true;
     }
+
+    #endregion
 
     #region Input system utils
 

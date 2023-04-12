@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hp: 100
   speed: 5
-  dashCooldown: 1
+  dodgeCooldown: 1
   attackRadius: 1
   enemyMask:
     serializedVersion: 2
     m_Bits: 64
   attackDmg: 1
-  attackCooldown: 0.5
+  attackCooldown: 0.4
